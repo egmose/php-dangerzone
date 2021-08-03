@@ -376,6 +376,43 @@ class network
     }
 
     /**
+     * Split a network into minor networks if it contained in the network
+     * 
+     * @param network $a network to split
+     * @param networks $list list of networks to remove 
+     */
+    static function subtract(network $a, networks $list)
+    {
+        $networks = new networks;
+        $start = $a->ip;
+        $tmp;
+    
+        foreach($list as $elem)
+        {
+            // elem contained in a?
+            if($a->net()->value < $elem->net()->value && $elem->broadcast()->value < $a->broadcast()->value && $a->ip->type == $elem->ip->type)
+            {
+                // while their is room
+                while($start->value < $elem->net()->value)
+                {
+                    $cidr = binaryip::find_longest_match( $start, $elem->ip ) + 1;
+                    $tmp = new network( $start, $cidr );
+                    while( $tmp->net() < $start )
+                    {
+                        $cidr++;
+                        $tmp = new network( $start, $cidr );
+                    }
+                    $networks->add($tmp);
+                    $start = binaryip::math_inc($tmp->broadcast());
+                }
+                $start = binaryip::math_inc($elem->broadcast());
+            }
+        }
+    
+        return $networks;    
+    }
+    
+    /**
     * Debugging is nice
     *
     */
@@ -465,7 +502,7 @@ class supernet
 * @author Torben Egmose <torben@egmose.net>
 * @license MIT
 */
-class networks
+class networks implements IteratorAggregate
 {
     /**
     * Network we should bundle
@@ -602,6 +639,23 @@ class networks
 
         return $out;
     }
+    
+    /**
+     * Make foreach work
+     */
+    public function getIterator() 
+    {
+        return new ArrayObject($this->nets);
+    }
+
+    /**
+    * Debugging is nice
+    *
+    */
+    public function __toString()
+    {
+        return implode("",array_map(function($a){ return $a->__toString();},$this->nets));
+    }    
 }
 
 if(DEBUG)
