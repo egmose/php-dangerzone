@@ -1,4 +1,3 @@
-<pre>
 <?php
 
 /**
@@ -18,7 +17,7 @@
 * @author Torben Egmose <torben@egmose.net>
 * @link http://en.wikipedia.org/wiki/IPv4_subnetting_reference
 */
-DEFINE('DEBUG', true);
+DEFINE('DEBUG', false);
 
 /**
 * Byte string representation of an IP
@@ -645,7 +644,7 @@ if(DEBUG)
         }
     }
 
-
+    print "<pre>";
     $test = new test();
     $test->add('a',new network('10.0.0.2',24));
     $test->add('b',new network('10.0.1.2',24));
